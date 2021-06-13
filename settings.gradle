@@ -10,3 +10,4 @@
 rootProject.name = 'RedisPubSub'
 include ":Publisher"
 include ":Subscriber"
+include ":Cubscriber"
