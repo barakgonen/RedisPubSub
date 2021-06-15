@@ -5,16 +5,19 @@ import redis.clients.jedis.JedisPubSub;
 
 import java.util.Collection;
 
-public class RedisSubscriber extends JedisPubSub implements SubscriberApi {
+public class RedisSubscriber extends JedisPubSub implements SubscriberApi, Runnable {
     private int id;
     private int msgNumber;
     private Jedis jedis;
+    private Collection<String> initialState;
 
 
-    public RedisSubscriber(int id) {
+    public RedisSubscriber(int id, Jedis jedisClient, Collection<String> initialState) {
+        super();
         this.id = id;
         this.msgNumber = 0;
-        this.jedis = new Jedis();
+        this.jedis = jedisClient;
+        this.initialState = initialState;
     }
 
     @Override
@@ -53,5 +56,10 @@ public class RedisSubscriber extends JedisPubSub implements SubscriberApi {
     public void onUnsubscribe(String channel, int subscribedChannels) {
         System.out.println("Client is Unsubscribed from channel : " + channel);
         System.out.println("Client is Subscribed to " + subscribedChannels + " no. of channels");
+    }
+
+    @Override
+    public void run() {
+        initialState.forEach(s -> jedis.subscribe(this, s));
     }
 }
