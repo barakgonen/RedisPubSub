@@ -1,23 +1,27 @@
 package org.bg.subscriber;
 
-import redis.clients.jedis.Jedis;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import redis.clients.jedis.JedisPubSub;
 
+import java.time.Instant;
 import java.util.Collection;
 
-public class RedisSubscriber extends JedisPubSub implements SubscriberApi, Runnable {
+public class RedisSubscriber extends JedisPubSub implements SubscriberApi {
+    private static Logger logger = LoggerFactory.getLogger(RedisSubscriber.class);
+
     private int id;
     private int msgNumber;
-    private Jedis jedis;
     private Collection<String> initialState;
+    private long lastMessurementTime;
 
 
-    public RedisSubscriber(int id, Jedis jedisClient, Collection<String> initialState) {
+    public RedisSubscriber(int id) {
         super();
         this.id = id;
         this.msgNumber = 0;
-        this.jedis = jedisClient;
         this.initialState = initialState;
+        lastMessurementTime = Instant.now().getEpochSecond();
     }
 
     @Override
@@ -43,23 +47,24 @@ public class RedisSubscriber extends JedisPubSub implements SubscriberApi, Runna
     @Override
     public void onMessage(String channel, String message) {
         msgNumber++;
-        System.out.println("Client: " + id + " msg number: " + msgNumber);
+        if (msgNumber % 1000 == 0) {
+            long nowTime = Instant.now().getEpochSecond();
+            long diff = nowTime - lastMessurementTime;
+            lastMessurementTime = nowTime;
+            System.out.println("Client: " + id + " total msgs: " + msgNumber + ", diff from last msg millis: " + diff);
+            System.out.println("");
+        }
     }
 
     @Override
     public void onSubscribe(String channel, int subscribedChannels) {
-        System.out.println("Client " + id + " is Subscribed to channel : " + channel);
-        System.out.println("Client " + id + " is Subscribed to " + subscribedChannels + " no. of channels");
+//        System.out.println("Client " + id + " is Subscribed to channel : " + channel);
+//        System.out.println("Client " + id + " is Subscribed to " + subscribedChannels + " no. of channels");
     }
 
     @Override
     public void onUnsubscribe(String channel, int subscribedChannels) {
         System.out.println("Client is Unsubscribed from channel : " + channel);
         System.out.println("Client is Subscribed to " + subscribedChannels + " no. of channels");
-    }
-
-    @Override
-    public void run() {
-        initialState.forEach(s -> jedis.subscribe(this, s));
     }
 }

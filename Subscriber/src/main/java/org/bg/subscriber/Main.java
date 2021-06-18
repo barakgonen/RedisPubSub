@@ -1,102 +1,179 @@
 package org.bg.subscriber;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisPubSub;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Flow;
 
 public class Main {
     private static final int MIN_CHANNEL_ID = 0;
     private static final int MAX_CHANNEL_ID = 30000;
-    private static final int EXPECTED_SIZE_FOR_CLIENT = 3000;
-
+    private static final int EXPECTED_SIZE_FOR_CLIENT = 15000;
+    private static Logger logger = LoggerFactory.getLogger(Main.class);
     public static void main(String[] args) {
-        int numberOfClients = 20;
+
+        int numberOfClients = 8;
         ExecutorService executor = Executors.newFixedThreadPool(20);
 
-        Jedis jedis = null;
-//        try {
-            jedis = new Jedis();
-//            ConcurrentHashMap<Integer, RedisSubscriber> subs = new ConcurrentHashMap<>();
-//
-//            for (int i = 0; i < numberOfClients; i++){
-//                subs.put(i, new RedisSubscriber(i, jedis, getChannelIds()));
-//            }
-//
-//            subs.entrySet().forEach(integerRedisSubscriberEntry -> {
-//                executor.submit(integerRedisSubscriberEntry.getValue());
-//            });
-//
-//
-//            while (true){
-//
-//            }
-//        } catch (Exception e){
-//            System.out.println("Exception has caught");
-//        }
+        final JedisPoolConfig poolConfig = new JedisPoolConfig();
+        final JedisPool jedisPool = new JedisPool(poolConfig, "localhost", 6379, 0);
+        ConcurrentHashMap<Integer, MyRedisClient> idToClient = new ConcurrentHashMap<>();
 
-//            ConcurrentHashMap<Integer, JedisPubSub> subscribers = new ConcurrentHashMap<>();
-////            try {
-//            for (int i = 0; i < numberOfClients; i++) {
-        JedisPubSub jedisPubSub = new JedisPubSub() {
+        for (int i = 0; i < numberOfClients; i++) {
+            idToClient.put(i, new MyRedisClient(i, jedisPool.getResource()));
+        }
 
-            private int numberOfMessages = 0;
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
-            @Override
-            public void onMessage(String channel, String message) {
-                numberOfMessages++;
-//                    System.out.println("Channel " + channel + " has sent a message : " + message);
-                if (numberOfMessages % 100 == 0)
-                    System.out.println("BGBGBGBGBGBGB");
-            }
+        idToClient.values().forEach(myRedisClient -> {
+            myRedisClient.subscribe(getChannelIds());
+        });
 
-            @Override
-            public void onSubscribe(String channel, int subscribedChannels) {
-                System.out.println("Client is Subscribed to channel : " + channel);
-                System.out.println("Client is Subscribed to " + subscribedChannels + " no. of channels");
-            }
+        final JedisPoolConfig poolConfig2 = new JedisPoolConfig();
+        final JedisPool jedisPool2 = new JedisPool(poolConfig2, "localhost", 6379, 0);
+        ConcurrentHashMap<Integer, MyRedisClient> idToClient2 = new ConcurrentHashMap<>();
 
-            @Override
-            public void onUnsubscribe(String channel, int subscribedChannels) {
-                System.out.println("Client is Unsubscribed from channel : " + channel);
-                System.out.println("Client is Subscribed to " + subscribedChannels + " no. of channels");
-            }
+        for (int i = 20; i < numberOfClients + 20; i++) {
+            idToClient2.put(i, new MyRedisClient(i, jedisPool2.getResource()));
+        }
 
-        };
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
-        Collection<String> keys = getChannelIds();
-        jedis.subscribe(jedisPubSub, keys.toArray(keys.toArray(new String[keys.size()])));
+        idToClient2.values().forEach(myRedisClient -> {
+            myRedisClient.subscribe(getChannelIds());
+        });
 
-//                subscribers.put(i, jedisPubSub);
+
+
+        final JedisPoolConfig poolConfig3 = new JedisPoolConfig();
+        final JedisPool jedisPool3 = new JedisPool(poolConfig3, "localhost", 6379, 0);
+        ConcurrentHashMap<Integer, MyRedisClient> idToClient3 = new ConcurrentHashMap<>();
+
+        for (int i = 30; i < numberOfClients + 30; i++) {
+            idToClient3.put(i, new MyRedisClient(i, jedisPool3.getResource()));
+        }
+
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        idToClient3.values().forEach(myRedisClient -> {
+            myRedisClient.subscribe(getChannelIds());
+        });
+
+
+
+        final JedisPoolConfig poolConfig4 = new JedisPoolConfig();
+        final JedisPool jedisPool4 = new JedisPool(poolConfig4, "localhost", 6379, 0);
+        ConcurrentHashMap<Integer, MyRedisClient> idToClient4 = new ConcurrentHashMap<>();
+
+        for (int i = 40; i < numberOfClients + 40; i++) {
+            idToClient4.put(i, new MyRedisClient(i, jedisPool4.getResource()));
+        }
+
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        idToClient4.values().forEach(myRedisClient -> {
+            myRedisClient.subscribe(getChannelIds());
+        });
+
+
+        final JedisPoolConfig poolConfig5 = new JedisPoolConfig();
+        final JedisPool jedisPool5 = new JedisPool(poolConfig5, "localhost", 6379, 0);
+        ConcurrentHashMap<Integer, MyRedisClient> idToClient5 = new ConcurrentHashMap<>();
+
+        for (int i = 50; i < numberOfClients + 50; i++) {
+            idToClient5.put(i, new MyRedisClient(i, jedisPool5.getResource()));
+        }
+
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        idToClient5.values().forEach(myRedisClient -> {
+            myRedisClient.subscribe(getChannelIds());
+        });
+
+        final JedisPoolConfig poolConfig6 = new JedisPoolConfig();
+        final JedisPool jedisPool6 = new JedisPool(poolConfig6, "localhost", 6379, 0);
+        ConcurrentHashMap<Integer, MyRedisClient> idToClient6 = new ConcurrentHashMap<>();
+
+        for (int i = 60; i < numberOfClients + 60; i++) {
+            idToClient6.put(i, new MyRedisClient(i, jedisPool6.getResource()));
+        }
+
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+            idToClient6.values().forEach(myRedisClient -> {
+        myRedisClient.subscribe(getChannelIds());
+    });
+
+        final JedisPoolConfig poolConfig7 = new JedisPoolConfig();
+        final JedisPool jedisPool7 = new JedisPool(poolConfig7, "localhost", 6379, 0);
+        ConcurrentHashMap<Integer, MyRedisClient> idToClient7 = new ConcurrentHashMap<>();
+
+        for (int i = 70; i < numberOfClients + 70; i++) {
+            idToClient7.put(i, new MyRedisClient(i, jedisPool7.getResource()));
+        }
+
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+                idToClient7.values().forEach(myRedisClient -> {
+            myRedisClient.subscribe(getChannelIds());
+        });
+
+        final JedisPoolConfig poolConfig8 = new JedisPoolConfig();
+        final JedisPool jedisPool8 = new JedisPool(poolConfig8, "localhost", 6379, 0);
+        ConcurrentHashMap<Integer, MyRedisClient> idToClient8 = new ConcurrentHashMap<>();
+
+        for (int i = 80; i < numberOfClients + 80; i++) {
+            idToClient7.put(i, new MyRedisClient(i, jedisPool8.getResource()));
+        }
+
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        idToClient8.values().forEach(myRedisClient -> {
+            myRedisClient.subscribe(getChannelIds());
+        });
+        System.out.println("BGBGBGBGB");
+
     }
-//
-//
-//            /* Creating Jedis object for connecting with redis server */
-//            /* Creating JedisPubSub object for subscribing with channels */
-//
-//            for (int i = 0; i < subscribers.size(); i++) {
-//                Collection<String> entities = getChannelIds();
-//                jedis.subscribe(subscribers.get(i), entities.toArray(new String[entities.size()]));
-//            }
-//
-//            /* Subscribing to channel C1 and C2 */
-//
-//        } catch (Exception ex) {
-//
-//            System.out.println("Exception : " + ex.getMessage());
-//
-//        } finally {
-//
-//            if (jedis != null) {
-//                jedis.close();
-//            }
-//        }
-//    }
-
 
     private static Collection<String> getChannelIds() {
         HashSet<String> ids = new HashSet<>();
