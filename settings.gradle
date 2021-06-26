@@ -8,6 +8,6 @@
  */
 
 rootProject.name = 'RedisPubSub'
+include ":Common"
 include ":Publisher"
 include ":Subscriber"
-include ":Cubscriber"

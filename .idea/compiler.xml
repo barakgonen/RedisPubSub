@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel>
+    <bytecodeTargetLevel target="11">
+      <module name="Common" target="11" />
+      <module name="common.main" target="11" />
+      <module name="common.test" target="11" />
       <module name="Publisher" target="11" />
       <module name="Publisher.main" target="11" />
       <module name="Publisher.test" target="11" />
+      <module name="Subscriber" target="11" />
+      <module name="Subscriber.main" target="11" />
+      <module name="Subscriber.test" target="11" />
     </bytecodeTargetLevel>
   </component>
 </project>

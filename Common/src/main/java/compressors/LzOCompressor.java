@@ -1,5 +1,7 @@
 package compressors;
 
+import org.anarres.lzo.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
