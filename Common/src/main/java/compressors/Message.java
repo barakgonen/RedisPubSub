@@ -1,4 +1,4 @@
-package org.bg.publisher;
+package compressors;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -42,5 +42,9 @@ public class Message<T> implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(id, sentDateTimeMillis, receiveDateTimeMillis, totalOffset, payload);
+    }
+
+    public long getTotalOffset(){
+        return this.totalOffset;
     }
 }

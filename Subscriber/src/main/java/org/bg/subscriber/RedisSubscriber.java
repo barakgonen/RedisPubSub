@@ -1,18 +1,18 @@
 package org.bg.subscriber;
 
 import com.google.gson.Gson;
+import compressors.Message;
+import compressors.SnappyCompressor;
 import org.redisson.Redisson;
 import org.redisson.api.RTopic;
 import org.redisson.api.RedissonClient;
 import org.redisson.api.listener.MessageListener;
 import org.redisson.config.Config;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.io.IOException;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 public class RedisSubscriber implements SubscriberApi, Runnable {
     private int id;
@@ -23,6 +23,7 @@ public class RedisSubscriber implements SubscriberApi, Runnable {
     private int expectedNumberOfMessages;
     boolean hasFinished;
 
+    private SnappyCompressor<Message> decompressor;
     private HashSet<String> myKeys;
 
     private ConcurrentHashMap<String, MessageListener<String>> bg;
@@ -35,6 +36,7 @@ public class RedisSubscriber implements SubscriberApi, Runnable {
         this.expectedNumberOfMessages = numberOfMessages;
         this.hasFinished = false;
         this.bg = new ConcurrentHashMap<>();
+        this.decompressor = new SnappyCompressor<>();
     }
 
     public boolean hasFinished() {
@@ -57,18 +59,26 @@ public class RedisSubscriber implements SubscriberApi, Runnable {
 
     private void onMessageArrived(CharSequence channel, String msg) {
         msgNumber++;
-        Message<String> message = GSON.fromJson(msg, Message.class);
-        message.setReceiveDateTimeMillis();
-        if (message.getTotalOffset() > 2)
-            System.out.println("ClientId = " + id + ", channel = " + channel + ", diff millis: " + message.getTotalOffset());
-        if (msgNumber % 10 == 0)
-            System.out.println("Client: " + id + ", got: " + msgNumber + " msgs");
-        if (msgNumber == this.expectedNumberOfMessages)
-            hasFinished = true;
+        try {
+            byte[] value = Base64.getDecoder().decode(msg);
+            Message message = decompressor.uncompress(value);
+            message.setReceiveDateTimeMillis();
+            if (message.getTotalOffset() > 2)
+                System.out.println("ClientId = " + id + ", channel = " + channel + ", diff millis: " + message.getTotalOffset());
+            if (msgNumber % 10000 == 0)
+                System.out.println("Client: " + id + ", got: " + msgNumber + " msgs");
+            if (msgNumber == this.expectedNumberOfMessages)
+                hasFinished = true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
 
     }
 
-    public HashSet<String> getMyKeys(){
+    public HashSet<String> getMyKeys() {
         return myKeys;
     }
 
