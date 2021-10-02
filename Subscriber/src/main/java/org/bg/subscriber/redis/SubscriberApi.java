@@ -1,4 +1,4 @@
-package org.bg.subscriber;
+package org.bg.subscriber.redis;
 
 import java.util.Collection;
 
